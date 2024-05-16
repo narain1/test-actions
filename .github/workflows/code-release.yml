@@ -59,4 +59,4 @@ jobs:
           PR_DESCRIPTION="${{ github.event.pull_request.body }}"
           ESCAPED_PR_DESCRIPTION=$(echo "$PR_DESCRIPTION" | sed ':a;N;$!ba;s/\n/\\n/g')
           RELEASE_NOTES="Title: $PR_TITLE\n\nDescription:\n$ESCAPED_PR_DESCRIPTION"
-          gh release create "$TAG_NAME" containser/lambda/*.zip --title "$TAG_NAME" --notes "$RELEASE_NOTES"
+          gh release create "$TAG_NAME" containers/lambda/*.zip --title "$TAG_NAME" --notes "$RELEASE_NOTES"
