@@ -1,0 +1,62 @@
+name: Release on PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Zip the repository
+        run: |
+          cd containers/lambda/
+          if ! command -v zip &> /dev/null
+          then
+              echo "zip command could not be found. Please install zip package."
+              exit 1
+          fi
+
+          for dir in */
+          do
+              base=$(basename "$dir")
+              version_file="${dir}version.py"
+              if [ "$base" == "data" ]; then
+                  version_file="${dir}sqs/version.py"
+              fi
+
+              if [ -f "$version_file" ]; then
+                  version=$(grep -oP "__version__ = \"\K[^\"]+" "$version_file")
+                  zip_name="${base}-${version}.zip"
+                  [ -z "$version" ] && zip_name="${base}.zip"
+              else
+                  zip_name="${base}.zip"
+              fi
+              zip -r "$zip_name" "$dir"
+          done
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install -y gh
+
+      - name: GitHub CLI configuration
+        run: echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+
+      - name: Create release and upload zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="r${{ github.event.number }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_DESCRIPTION="${{ github.event.pull_request.body }}"
+          ESCAPED_PR_DESCRIPTION=$(echo "$PR_DESCRIPTION" | sed ':a;N;$!ba;s/\n/\\n/g')
+          RELEASE_NOTES="Title: $PR_TITLE\n\nDescription:\n$ESCAPED_PR_DESCRIPTION"
+          gh release create "$TAG_NAME" containser/lambda/*.zip --title "$TAG_NAME" --notes "$RELEASE_NOTES"
