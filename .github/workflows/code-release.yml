@@ -27,7 +27,7 @@ jobs:
           for dir in */
           do
               base=$(basename "$dir")
-              version_file="${dir}version.py"
+              version_file="${dir}unified/version.py"
               if [ "$base" == "data" ]; then
                   version_file="${dir}sqs/version.py"
               fi
