@@ -57,6 +57,10 @@ jobs:
           TAG_NAME="r${{ github.event.number }}"
           PR_TITLE="${{ github.event.pull_request.title }}"
           PR_DESCRIPTION="${{ github.event.pull_request.body }}"
-          ESCAPED_PR_DESCRIPTION=$(echo "$PR_DESCRIPTION" | sed ':a;N;$!ba;s/\n/\\n/g')
-          RELEASE_NOTES="Title: $PR_TITLE\n\nDescription:\n$ESCAPED_PR_DESCRIPTION"
+          # Convert single newlines to newline with two spaces for Markdown formatting
+          ESCAPED_PR_DESCRIPTION=$(echo "$PR_DESCRIPTION" | sed ':a;N;$!ba;s/\n/  \n/g')
+          # Ensure consistent newlines before Markdown headers and list items
+          ESCAPED_PR_DESCRIPTION=$(echo "$ESCAPED_PR_DESCRIPTION" | sed 's/### /\n### /g;s/- /\n- /g')
+          RELEASE_NOTES="**Title:** $PR_TITLE\n\n**Description:**\n$ESCAPED_PR_DESCRIPTION"
           gh release create "$TAG_NAME" containers/lambda/*.zip --title "$TAG_NAME" --notes "$RELEASE_NOTES"
+
