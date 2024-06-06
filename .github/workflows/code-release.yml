@@ -27,18 +27,29 @@ jobs:
           for dir in */
           do
               base=$(basename "$dir")
-              version_file="${dir}unified/version.py"
+              version_file=""
+
               if [ "$base" == "data" ]; then
                   version_file="${dir}sqs/version.py"
+              else
+                  if [ -d "${dir}unified" ]; then
+                      version_file="${dir}unified/version.py"
+                  elif [ -d "${dir}sqs" ]; then
+                      version_file="${dir}sqs/version.py"
+                  fi
               fi
 
               if [ -f "$version_file" ]; then
-                  version=$(grep -oP "__version__ = \"\K[^\"]+" "$version_file")
-                  zip_name="${base}-${version}.zip"
-                  [ -z "$version" ] && zip_name="${base}.zip"
+                  version=$(grep -oP '__version__ = "\K[^\"]+' "$version_file")
+                  if [ -n "$version" ]; then
+                      zip_name="${base%/}-${version}.zip"
+                  else
+                      zip_name="${base%/}.zip"
+                  fi
               else
-                  zip_name="${base}.zip"
+                  zip_name="${base%/}.zip"
               fi
+
               zip -r "$zip_name" "$dir"
           done
 
@@ -59,8 +70,6 @@ jobs:
           PR_DESCRIPTION="${{ github.event.pull_request.body }}"
           # Convert single newlines to newline with two spaces for Markdown formatting
           ESCAPED_PR_DESCRIPTION=$(echo "$PR_DESCRIPTION" | sed ':a;N;$!ba;s/\n/  \n/g')
-          # Ensure consistent newlines before Markdown headers and list items
           ESCAPED_PR_DESCRIPTION=$(echo "$ESCAPED_PR_DESCRIPTION" | sed 's/### /\n### /g;s/- /\n- /g')
-          RELEASE_NOTES="**Title:** $PR_TITLE\n\n**Description:**\n$ESCAPED_PR_DESCRIPTION"
+          RELEASE_NOTES="**Title:** $PR_TITLE **Description:** $ESCAPED_PR_DESCRIPTION"
           gh release create "$TAG_NAME" containers/lambda/*.zip --title "$TAG_NAME" --notes "$RELEASE_NOTES"
-
