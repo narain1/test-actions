@@ -1,6 +1,6 @@
 import argparse
 import subprocess
-import glob
+import glob, os
 
 # Set up argument parsing
 parser = argparse.ArgumentParser(description="Create a GitHub release with a tag, title, and description.")
