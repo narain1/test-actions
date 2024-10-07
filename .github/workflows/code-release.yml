@@ -61,3 +61,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 create_release.py
+
+      - name: Upload Release Asset
+        run: |
+          # Assuming your lambda zip files are created beforehand
+          gh release upload "$TAG_NAME" containers/lambda/*.zip
