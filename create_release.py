@@ -1,5 +1,6 @@
 import argparse
 import subprocess
+import os
 
 # Set up argument parsing
 parser = argparse.ArgumentParser(description="Create a GitHub release with a tag, title, and description.")
@@ -22,6 +23,7 @@ release_notes = f"**Title:** {pr_title}\n**Description:** {escaped_pr_descriptio
 
 # Create GitHub release using gh CLI
 try:
+    print(os.listdir('containers/lambda'))
     result = subprocess.run(
         ['gh', 'release', 'create', tag_name, 'containers/lambda/*.zip', '--title', tag_name, '--notes', release_notes],
         check=True,
