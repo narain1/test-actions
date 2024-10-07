@@ -1,3 +1,4 @@
 # test-actions
 
 yay
+update
