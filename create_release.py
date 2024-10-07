@@ -23,7 +23,7 @@ release_notes = f"**Title:** {pr_title}\n**Description:** {escaped_pr_descriptio
 # Create GitHub release using gh CLI
 try:
     result = subprocess.run(
-        ['gh', 'release', 'create', tag_name, '*.zip', '--title', tag_name, '--notes', release_notes],
+        ['gh', 'release', 'create', tag_name, 'containers/lambda/*.zip', '--title', tag_name, '--notes', release_notes],
         check=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
