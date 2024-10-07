@@ -27,20 +27,14 @@ jobs:
           for dir in */
           do
               base=$(basename "$dir")
-              version_file=""
+              version_file="${dir}version.py"
 
-              if [ "$base" == "data" ]; then
-                  version_file="${dir}sqs/version.py"
-              else
-                  if [ -d "${dir}unified" ]; then
-                      version_file="${dir}unified/version.py"
-                  elif [ -d "${dir}sqs" ]; then
-                      version_file="${dir}sqs/version.py"
-                  fi
-              fi
+              echo "Processing directory: $base"
+              echo "Version file: $version_file"
 
               if [ -f "$version_file" ]; then
                   version=$(grep -oP '__version__ = "\K[^\"]+' "$version_file")
+                  echo "Version found: $version"
                   if [ -n "$version" ]; then
                       zip_name="${base%/}-${version}.zip"
                   else
@@ -50,6 +44,7 @@ jobs:
                   zip_name="${base%/}.zip"
               fi
 
+              echo "Creating zip file: $zip_name"
               zip -r "$zip_name" "$dir"
           done
 
@@ -61,15 +56,35 @@ jobs:
       - name: GitHub CLI configuration
         run: echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
-      - name: Create release and upload zip
+      - name: Create release and upload zip using Python
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG_NAME="r${{ github.event.number }}"
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_DESCRIPTION="${{ github.event.pull_request.body }}"
+          python3 - <<'EOF'
+          import os
+          import subprocess
+
+          # Fetch PR details from the GitHub event
+          tag_name = f"r{os.getenv('GITHUB_EVENT_NUMBER')}"
+          pr_title = os.getenv('GITHUB_EVENT_PULL_REQUEST_TITLE')
+          pr_description = os.getenv('GITHUB_EVENT_PULL_REQUEST_BODY')
+
           # Convert single newlines to newline with two spaces for Markdown formatting
-          ESCAPED_PR_DESCRIPTION=$(echo "$PR_DESCRIPTION" | sed ':a;N;$!ba;s/\n/  \n/g')
-          ESCAPED_PR_DESCRIPTION=$(echo "$ESCAPED_PR_DESCRIPTION" | sed 's/### /\n### /g;s/- /\n- /g')
-          RELEASE_NOTES="**Title:** $PR_TITLE **Description:** $ESCAPED_PR_DESCRIPTION"
-          gh release create "$TAG_NAME" containers/lambda/*.zip --title "$TAG_NAME" --notes "$RELEASE_NOTES"
+          escaped_pr_description = pr_description.replace('\n', '  \n')
+          escaped_pr_description = escaped_pr_description.replace('### ', '\n### ').replace('- ', '\n- ')
+
+          release_notes = f"**Title:** {pr_title}\n**Description:** {escaped_pr_description}"
+
+          # Create GitHub release using gh CLI
+          try:
+              result = subprocess.run(
+                  ['gh', 'release', 'create', tag_name, 'containers/lambda/*.zip', '--title', tag_name, '--notes', release_notes],
+                  check=True,
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.PIPE,
+                  text=True
+              )
+              print(f"Release created successfully:\n{result.stdout}")
+          except subprocess.CalledProcessError as e:
+              print(f"Error while creating release:\n{e.stderr}")
+          EOF
