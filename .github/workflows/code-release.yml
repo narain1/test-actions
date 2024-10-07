@@ -60,7 +60,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo ls
+          ls
           python3 create_release.py --tag_name github.event.number --pr_title github.event.pull_request.title  --pr_description github.event.pull_request.body
 
       - name: Upload Release Asset
