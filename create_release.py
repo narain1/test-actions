@@ -23,4 +23,4 @@ try:
     )
     print(f"Release created successfully:\n{result.stdout}")
 except subprocess.CalledProcessError as e:
-    print(f"Error while creating release:\n{e.stderr}")v
+    print(f"Error while creating release:\n{e.stderr}")
