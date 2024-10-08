@@ -1,10 +1,17 @@
 import subprocess
 import glob, os
 import shutil
+import argparse
 
-tag_name = subprocess.run("${{github.event.number }}", capture_output=True, text=True)
-pr_title = subprocess.run("${{github.event.pull_request.title }}", capture_output=True, text=True)
-pr_description = subprocess.run("${{github.event.pull_request.body}}", capture_output=True, text=True)
+parser = argparse.ArgumentParser(description="Process GitHub PR data")
+
+# Add arguments for tag name, PR title, and PR description
+parser.add_argument('--tag_name', type=str, required=True, help="Tag name for the PR")
+parser.add_argument('--pr_title', type=str, required=True, help="Title of the pull request")
+parser.add_argument('--pr_description', type=str, required=True, help="Description of the pull request")
+
+# Parse the arguments
+args = parser.parse_args()
 
 print("Tag name", tag_name)
 print("pr title", pr_title)
