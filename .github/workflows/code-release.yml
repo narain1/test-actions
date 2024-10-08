@@ -59,14 +59,19 @@ jobs:
       - name: Create release and upload zip using Python
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{github.event.number }}
+          pr_title: ${{github.event.pull_request.title }}
+          pr_description: ${{github.event.pull_request.body}}
         run: |
           ls
           ls containers/lambda
-          python3 create_release.py
+          python3 create_release.py --tag_name "$name" --pr_title "$pr_title" --pr_description "$pr_description"
 
       - name: Upload Release Asset
+        env:
+          tag_name: ${{github.event.number }}
         run: |
           # Assuming your lambda zip files are created beforehand
           ls
           ls container/lambda
-          gh release upload "${{github.event.number }} containers/lambda/*.zip
+          gh release upload "tag_name" containers/lambda/*.zip
