@@ -2,9 +2,9 @@ import subprocess
 import glob, os
 import shutil
 
-tag_name = shutil.run("${{github.event.number }}", capture_output=True, text=True)
-pr_title = shutil.run("${{github.event.pull_request.title }}", capture_output=True, text=True)
-pr_description =shutil.run("${{github.event.pull_request.body}}", capture_output=True, text=True)
+tag_name = subprocess.run("${{github.event.number }}", capture_output=True, text=True)
+pr_title = subprocess.run("${{github.event.pull_request.title }}", capture_output=True, text=True)
+pr_description = subprocess.run("${{github.event.pull_request.body}}", capture_output=True, text=True)
 
 print("Tag name", tag_name)
 print("pr title", pr_title)
