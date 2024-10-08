@@ -62,7 +62,7 @@ jobs:
         run: |
           ls
           ls containers/lambda
-          python3 create_release.py --tag_name "${{github.event.number }}" --pr_title "${{github.event.pull_request.title }}" --pr_description "${{github.event.pull_request.body}"
+          python3 create_release.py --tag_name "${{github.event.number }}" --pr_title "${{github.event.pull_request.title }}" --pr_description "${{github.event.pull_request.body}}"
 
       - name: Upload Release Asset
         run: |
