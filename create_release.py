@@ -12,6 +12,9 @@ parser.add_argument('--pr_description', type=str, required=True, help="Descripti
 
 # Parse the arguments
 args = parser.parse_args()
+tag_name = args.tag_name
+pr_title = args.pr_title
+pr_description = args.pr_description
 
 print("Tag name", tag_name)
 print("pr title", pr_title)
